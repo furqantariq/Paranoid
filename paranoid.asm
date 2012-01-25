@@ -1,21 +1,66 @@
 .model small
 .stack 100h
 .data
-map db 40 dup(40 dup(1))
-    db 10 dup(40 dup(0))
+map	db 1 dup(32 dup(0))
+	db 23 dup(32 dup(1))
+	db 15 dup(32 dup(0))
+	db 16 dup(0),3,15 dup(0)
+	db 9 dup(32 dup(0))
+	db 14 dup(0),2,2,2,2,2,13 dup(0)
+
+barPos db 15	
 	
 .code
 main proc
 	mov ah,0
 	mov al,4h
 	int 10h
+
+	mov ah,0bh
+	mov bh,1
+	mov bl,0
+	int 10h
+
 	mov ax,@data
 	mov ds,ax
+	
+	
 
 MAINLOOP:
 	call shwMap
+
+	mov ah,0
+	int 16h
+	cmp ah,39h
+	je EXIT
+	cmp ah,4dh
+	je barRight
+	cmp ah,4bh
+	je barLeft
+	
 	jmp MAINLOOP
 
+barRight:
+	cmp [barPos],28
+	je MAINLOOP
+
+	xor ax,ax
+	mov al,32
+	mov bx,38
+	mul bx
+	mov bx,ax
+	mov bx,offset barPos
+	mov si,[bx]
+	mov [map+32*39+si],0
+	mov [map+32*39+si+5],2
+	inc [barPos]
+	
+	jmp MAINLOOP	
+
+barLEFT:	
+
+jmp MAINLOOP
+	
 EXIT:	
 	mov ah,4ch
 	int 21h
@@ -23,39 +68,27 @@ main endp
 
 pixalize proc
 	mov al,8
-	mul cx
+	mul si
 	mov cx,ax
 
 	mov al,4
-	mul dx
+	mul di
 	mov dx,ax
 	ret
 pixalize endp
 
-depixalize proc
-	mov ax,cx
-	mov cx,8
-	div cx
-	mov cl,al
 
-	mov ax,dx
-	mov dx,4
-	div dx
-	mov dl,al
-	
-	ret
-depixalize endp
 shwMap proc
 	
-	mov dx,0
+	mov di,0
 	LP1:
-		mov cx,0
-		mov bx,dx
-		mov al,40
-		mul bx
-		mov bx,ax
+		mov si,0
 		LP2:
-			mov si,cx
+			mov bx,di
+			mov ax,32
+			mul bx
+			mov bx,ax
+			mov ah,0
 			mov al,map[si][bx]
 			cmp al,1
 			je TILE	
@@ -64,27 +97,28 @@ shwMap proc
 			cmp al,3
 			je BALL
 			FIN:
-			inc cx
-			cmp cx,40
+			inc si
+			cmp si,32
 			jne LP2
-	inc dx
-	cmp dx,50
-	jne LP1
-	jmp EXIT
+		inc di
+		cmp di,50
+		jne LP1
+		jmp EXIT
+	
 TILE:
 	call pixalize
 	call drwTile
-	call depixalize
+
 	jmp FIN
 BAR:
 	call pixalize
 	call drwBar
-	call depixalize
+
 	jmp FIN
 BALL:
 	call pixalize
 	call drwBall
-	call depixalize
+
 	jmp FIN
 
 EXIT:	
@@ -94,28 +128,29 @@ shwMap endp
 
 drwTile proc
 	mov ah,0ch
-	mov bl,4
-	mov al,2
+	mov bl,2
+	mov al,3
+	inc cx
+	inc dx
 
 LP1:
-	mov bh,8
+	mov bh,6
 	LP2:	
 		int 10h
 		inc cx
 		dec bh
 		jnz LP2
 	inc dx
-	sub cx,8
+	sub cx,6
 	dec bl
 	jnz LP1
 
-	sub dx,4
-	
 	ret	
 drwTile endp
 
 drwBall proc
 	mov ah,0ch
+	mov al,2
 	add cx,2
 	mov bl,4
 	LP1:
@@ -147,14 +182,14 @@ drwBall proc
 		dec bl
 		jnz LP4
 
-	sub cx,5
-	sub cx,4
+	
 	ret
 drwBall endp
 
 drwBar proc
 	mov ah,0ch
-	mov bl,2
+	mov al,1
+	mov bl,2								
 
 LP1:
 	mov bh,8
@@ -168,8 +203,6 @@ LP1:
 	dec bl
 	jnz LP1
 
-	sub cx,8
-	
 	ret	
 drwBar endp
 	
