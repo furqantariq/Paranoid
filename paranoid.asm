@@ -11,26 +11,26 @@ map	db 1 dup(32 dup(0))
 barPos db 14
 ballPosX dw 16
 ballPosY dw 48
+intro db "PARANOID$"
 ball_dx dw 1
 ball_dy dw -1
 GAMEOVER_FLAG dw 0
-WIN_FLAG dw 0	
+WIN_FLAG dw 1	
 .code
 main proc
-	mov ah,0
-	mov al,4h
-	int 10h
-
-	mov ah,0bh
-	mov bh,1
-	mov bl,0
-	int 10h
 
 	mov ax,@data
 	mov ds,ax
 
-MAINLOOP:
+	mov ah,0
+	mov al,4h
+	int 10h
+
+	mov ah,0
+	int 16h
 	
+MAINLOOP:
+	mov [WIN_FLAG],1
 	call shwMap
 	call mvBall
 	
@@ -38,7 +38,7 @@ MAINLOOP:
 	je GAMEOVER
 	
 	cmp [WIN_FLAG],1
-	je GAMEOVER
+	je GAMEWIN
 	
 	
 	call detectBoundaries
@@ -48,8 +48,19 @@ MAINLOOP:
 	jmp MAINLOOP
 	
 GAMEOVER:
+	mov ah,2
+	mov dh,0
+	mov dl,39
+	int 10h
+	mov ah,9
+	mov al,'A'
+	mov bl,2
+	mov cx,1
+	int 10h
+	
 	mov ah,4ch
 	int 21h
+GAMEWIN:	
 
 main endp
 
@@ -90,46 +101,50 @@ ULT:
 	mov [map+bx+si-33],0
 	NEG [ball_dx]
 	NEG [ball_dy]
-	jmp C7
+	jmp C8
 BLT:
 	mov [map+bx+si+31],0
 	NEG [ball_dx]
 	NEG [ball_dy]
-	jmp C6
+	jmp C8
 		
 BRT:
 	mov [map+bx+si+33],0
 	NEG [ball_dx]
 	NEG [ball_dy]
-	jmp C5
+	jmp C8
 		
 LFT:
 	mov [map+bx+si-1],0
 	NEG [ball_dx]
-	jmp C4
+	jmp C8
 
 RIGT:
 	mov [map+bx+si+1],0
 	NEG [ball_dx]
-	jmp C3
+	jmp C8
 BOTM:
 	mov [map+bx+si-32],0
 	NEG [ball_dy]
-	jmp C2
+	jmp C8
 UP:
 	mov [map+bx+si-32],0
 	NEG [ball_dy]
-	jmp C1
+	jmp C8
 	
 	ret
 detectCollision endp
 	
 getInput proc	
 	mov ah,1		
+	
 	int 16h
 	jz RETURN
+	
+	
 	mov ah,0
 	int 16h
+	
 	cmp ah,1h
 	je EXIT
 	cmp ah,4dh
@@ -165,6 +180,9 @@ barLEFT:
 	jmp RETURN	
 
 RETURN:
+	mov ah,0ch
+	int 21h
+	
 	ret
 	
 EXIT:	
@@ -297,6 +315,7 @@ shwMap proc
 		jmp EXIT
 	
 TILE:
+	mov [WIN_FLAG],0
 	call pixalize
 	call drwTile
 
