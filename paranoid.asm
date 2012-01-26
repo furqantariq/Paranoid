@@ -4,11 +4,15 @@
 map	db 1 dup(32 dup(0))
 	db 23 dup(32 dup(1))
 	db 15 dup(32 dup(0))
-	db 16 dup(0),3,15 dup(0)
 	db 9 dup(32 dup(0))
-	db 15 dup(0),2,2,2,2,2,12 dup(0)
+	db 16 dup(0),3,15 dup(0)
+	db 14 dup(0),2,2,2,2,2,13 dup(0)
 
-barPos db 15	
+barPos db 14
+ballPosX dw 16
+ballPosY dw 48
+ball_dx dw 1
+ball_dy dw -1
 	
 .code
 main proc
@@ -21,17 +25,19 @@ main proc
 	mov bl,0
 	int 10h
 
-
 	mov ax,@data
 	mov ds,ax
-	
-	
+
+
+
 
 MAINLOOP:
+	
 	call shwMap
+	call mvBall
 
-	mov ah,0
-	int 16h
+	mov ah,0		
+	int 16h			
 	cmp ah,1h
 	je EXIT
 	cmp ah,4dh
@@ -76,6 +82,59 @@ EXIT:
 	int 21h
 main endp
 
+mvBall proc
+	mov bx,offset ballPosX
+	mov si,offset ballPosY
+	mov bx,[bx]
+	mov si,[si]
+	xor ax,ax
+	mov al,32
+	mul si
+	mov si,ax
+	mov [map+bx+si],0
+
+	mov di,offset ball_dx
+	mov ax,[di]
+	add [ballPosX],ax
+	cmp [ballPosX],ax
+	mov di,offset ball_dy
+	mov ax,[di]
+	add [ballPosY],ax
+	cmp [ballPosY],ax
+	call chkBoundaries
+	
+	mov bx,offset ballPosX
+	mov si,offset ballPosY
+	mov bx,[bx]
+	mov si,[si]
+	xor ax,ax
+	mov al,32
+	mul si
+	mov si,ax
+	mov [map+bx+si],3
+
+	ret
+	
+mvBall endp
+
+chkBoundaries proc
+	cmp [ballPosX],31
+	je NEGX
+	cmp [ballPosX],0
+	je NEGX
+	cmp [ballPosY],0
+	je NEGY
+	cmp [ballPosY],49
+	je NEGY
+	jmp EXIT
+
+NEGX:	NEG [ball_dx]
+	jmp EXIT
+NEGY:	NEG [ball_dy]
+	jmp EXIT
+EXIT:	ret
+chkBoundaries endp	
+	
 pixalize proc
 	mov al,8
 	mul si
