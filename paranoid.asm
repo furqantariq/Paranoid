@@ -6,7 +6,7 @@ map	db 1 dup(32 dup(0))
 	db 15 dup(32 dup(0))
 	db 16 dup(0),3,15 dup(0)
 	db 9 dup(32 dup(0))
-	db 14 dup(0),2,2,2,2,2,13 dup(0)
+	db 15 dup(0),2,2,2,2,2,12 dup(0)
 
 barPos db 14	
 	
@@ -42,8 +42,8 @@ MAINLOOP:
 	jmp MAINLOOP
 
 barRight:
-	cmp [barPos],28
-	je MAINLOOP
+	cmp [barPos],27
+	jge MAINLOOP
 
 	mov bx,offset barPos
 	mov bx,[bx]
@@ -56,14 +56,14 @@ barRight:
 
 barLEFT:	
 	cmp [barPos],0
-	je MAINLOOP
+	jle MAINLOOP
 
 	mov bx,offset barPos
 	mov bx,[bx]
 	mov bh,0
 	mov [map+32*49+bx-1],2
 	mov [map+32*49+bx+4],0
-	inc [barPos]
+	dec [barPos]
 	
 	jmp MAINLOOP	
 
@@ -100,6 +100,8 @@ shwMap proc
 			mov bx,ax
 			mov ah,0
 			mov al,map[si][bx]
+			cmp al,0
+			je BLANK
 			cmp al,1
 			je TILE	
 			cmp al,2
@@ -131,6 +133,12 @@ BALL:
 
 	jmp FIN
 
+BLANK:
+	call pixalize
+	call drwBlank
+
+	jmp FIN
+
 EXIT:	
 	ret
 	
@@ -157,6 +165,26 @@ LP1:
 
 	ret	
 drwTile endp
+
+drwBlank proc
+	mov ah,0ch
+	mov bl,4
+	mov al,0
+
+LP1:
+	mov bh,8
+	LP2:	
+		int 10h
+		inc cx
+		dec bh
+		jnz LP2
+	inc dx
+	sub cx,8
+	dec bl
+	jnz LP1
+
+	ret	
+drwBlank endp
 
 drwBall proc
 	mov ah,0ch
