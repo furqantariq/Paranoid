@@ -8,7 +8,7 @@ map	db 1 dup(32 dup(0))
 	db 9 dup(32 dup(0))
 	db 14 dup(0),2,2,2,2,2,13 dup(0)
 
-barPos db 15	
+barPos db 14	
 	
 .code
 main proc
@@ -21,6 +21,7 @@ main proc
 	mov bl,0
 	int 10h
 
+
 	mov ax,@data
 	mov ds,ax
 	
@@ -31,7 +32,7 @@ MAINLOOP:
 
 	mov ah,0
 	int 16h
-	cmp ah,39h
+	cmp ah,1h
 	je EXIT
 	cmp ah,4dh
 	je barRight
@@ -44,20 +45,29 @@ barRight:
 	cmp [barPos],28
 	je MAINLOOP
 
-	xor ax,ax
-	mov al,32
-	mov bx,38
-	mul bx
-	mov bx,ax
 	mov bx,offset barPos
-	mov si,[bx]
-	mov [map+32*39+si],0
-	mov [map+32*39+si+5],2
+	mov bx,[bx]
+	mov bh,0
+	mov [map+32*49+bx],bh
+	mov [map+32*49+bx+5],2
 	inc [barPos]
 	
 	jmp MAINLOOP	
 
 barLEFT:	
+	cmp [barPos],0
+	je MAINLOOP
+
+	mov bx,offset barPos
+	mov bx,[bx]
+	mov bh,0
+	mov [map+32*49+bx-1],2
+	mov [map+32*49+bx+4],0
+	inc [barPos]
+	
+	jmp MAINLOOP	
+
+
 
 jmp MAINLOOP
 	
