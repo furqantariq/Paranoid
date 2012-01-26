@@ -13,7 +13,8 @@ ballPosX dw 16
 ballPosY dw 48
 ball_dx dw 1
 ball_dy dw -1
-	
+GAMEOVER_FLAG dw 0
+WIN_FLAG dw 0	
 .code
 main proc
 	mov ah,0
@@ -28,28 +29,118 @@ main proc
 	mov ax,@data
 	mov ds,ax
 
-
-
-
 MAINLOOP:
 	
 	call shwMap
 	call mvBall
+	
+	cmp [GAMEOVER_FLAG],1
+	je GAMEOVER
+	
+	cmp [WIN_FLAG],1
+	je GAMEOVER
+	
+	
+	call detectBoundaries
+	call detectCollision
+	call getInput
+	
+	jmp MAINLOOP
+	
+GAMEOVER:
+	mov ah,4ch
+	int 21h
 
-	mov ah,0		
-	int 16h			
+main endp
+
+detectCollision proc
+	cmp [map+bx+si-32],1
+	je UP
+	
+	C1:
+	cmp [map+bx+si+32],1
+	je BOTM
+	C2:
+	cmp [map+bx+si+1],1
+	je RIGT
+	C3:
+	cmp [map+bx+si-1],1
+	je LFT
+	
+	C4:
+	cmp [map+bx+si+33],1
+	je BRT	
+	C5:
+	cmp [map+bx+si+31],1
+	je BLT
+	C6:
+	cmp [map+bx+si-33],1
+	je ULT
+	C7:
+	cmp [map+bx+si-31],1
+	je URT
+	C8:
+		ret
+URT:
+	mov [map+bx+si-31],0
+	NEG [ball_dx]
+	NEG [ball_dy]
+	jmp C8
+ULT:
+	mov [map+bx+si-33],0
+	NEG [ball_dx]
+	NEG [ball_dy]
+	jmp C7
+BLT:
+	mov [map+bx+si+31],0
+	NEG [ball_dx]
+	NEG [ball_dy]
+	jmp C6
+		
+BRT:
+	mov [map+bx+si+33],0
+	NEG [ball_dx]
+	NEG [ball_dy]
+	jmp C5
+		
+LFT:
+	mov [map+bx+si-1],0
+	NEG [ball_dx]
+	jmp C4
+
+RIGT:
+	mov [map+bx+si+1],0
+	NEG [ball_dx]
+	jmp C3
+BOTM:
+	mov [map+bx+si-32],0
+	NEG [ball_dy]
+	jmp C2
+UP:
+	mov [map+bx+si-32],0
+	NEG [ball_dy]
+	jmp C1
+	
+	ret
+detectCollision endp
+	
+getInput proc	
+	mov ah,1		
+	int 16h
+	jz RETURN
+	mov ah,0
+	int 16h
 	cmp ah,1h
 	je EXIT
 	cmp ah,4dh
 	je barRight
 	cmp ah,4bh
 	je barLeft
+	jmp RETURN
 	
-	jmp MAINLOOP
-
 barRight:
 	cmp [barPos],27
-	jge MAINLOOP
+	jge RETURN
 
 	mov bx,offset barPos
 	mov bx,[bx]
@@ -57,12 +148,12 @@ barRight:
 	mov [map+32*49+bx],bh
 	mov [map+32*49+bx+5],2
 	inc [barPos]
-	
-	jmp MAINLOOP	
+
+	jmp RETURN	
 
 barLEFT:	
 	cmp [barPos],0
-	jle MAINLOOP
+	jle RETURN
 
 	mov bx,offset barPos
 	mov bx,[bx]
@@ -71,16 +162,15 @@ barLEFT:
 	mov [map+32*49+bx+4],0
 	dec [barPos]
 	
-	jmp MAINLOOP	
+	jmp RETURN	
 
-
-
-jmp MAINLOOP
+RETURN:
+	ret
 	
 EXIT:	
 	mov ah,4ch
 	int 21h
-main endp
+getInput endp
 
 mvBall proc
 	mov bx,offset ballPosX
@@ -101,7 +191,6 @@ mvBall proc
 	mov ax,[di]
 	add [ballPosY],ax
 	cmp [ballPosY],ax
-	call chkBoundaries
 	
 	mov bx,offset ballPosX
 	mov si,offset ballPosY
@@ -117,23 +206,54 @@ mvBall proc
 	
 mvBall endp
 
-chkBoundaries proc
+detectBoundaries proc
 	cmp [ballPosX],31
 	je NEGX
 	cmp [ballPosX],0
 	je NEGX
-	cmp [ballPosY],0
+C2:	cmp [ballPosY],0
 	je NEGY
-	cmp [ballPosY],49
-	je NEGY
-	jmp EXIT
 
-NEGX:	NEG [ball_dx]
-	jmp EXIT
-NEGY:	NEG [ball_dy]
-	jmp EXIT
-EXIT:	ret
-chkBoundaries endp	
+	cmp [ballPosY],48
+	je BOTTOM
+E:	
+	ret
+
+NEGX:	
+	NEG [ball_dx]
+	jmp C2
+
+NEGY:	
+	NEG [ball_dy]
+	jmp E
+
+BOTTOM:
+	cmp [map+bx+si+32],2
+	je NEGY
+	
+	cmp [ball_dx],1
+	je N33
+	jne N32
+	N33: 
+		cmp [map+bx+si+33],2	
+		je NEGB
+	N32:
+		cmp [map+bx+si+31],2
+		je NEGB
+		
+	
+	mov GAMEOVER_FLAG,1
+	jmp E
+	
+NEGB:
+	NEG [ball_dy]
+	NEG [ball_dx]
+	jmp E
+	
+
+detectBoundaries endp	
+
+
 	
 pixalize proc
 	mov al,8
