@@ -8,7 +8,7 @@ map	db 1 dup(32 dup(0))
 	db 9 dup(32 dup(0))
 	db 15 dup(0),2,2,2,2,2,12 dup(0)
 
-barPos db 14	
+barPos db 15	
 	
 .code
 main proc
@@ -146,20 +146,20 @@ shwMap endp
 
 drwTile proc
 	mov ah,0ch
-	mov bl,2
+	mov bl,3
 	mov al,3
 	inc cx
 	inc dx
 
 LP1:
-	mov bh,6
+	mov bh,7
 	LP2:	
 		int 10h
 		inc cx
 		dec bh
 		jnz LP2
 	inc dx
-	sub cx,6
+	sub cx,7
 	dec bl
 	jnz LP1
 
