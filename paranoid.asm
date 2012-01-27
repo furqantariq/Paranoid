@@ -11,23 +11,27 @@ map	db 1 dup(32 dup(0))
 barPos db 14
 ballPosX dw 16
 ballPosY dw 48
-intro db "PARANOID$"
+intro db "PARANOID"
+credits db "BUILD BY FURQAN & HUSNAIN"
+instruct db "PRESS SPACE TO CONTINUE"
+WIN db "YOU WON"
+OVER db "GAME OVER"
 ball_dx dw 1
 ball_dy dw -1
 GAMEOVER_FLAG dw 0
 WIN_FLAG dw 1	
+
 .code
 main proc
 
 	mov ax,@data
 	mov ds,ax
 
+	call loadScreen
+	
 	mov ah,0
 	mov al,4h
 	int 10h
-
-	mov ah,0
-	int 16h
 	
 MAINLOOP:
 	mov [WIN_FLAG],1
@@ -38,7 +42,7 @@ MAINLOOP:
 	je GAMEOVER
 	
 	cmp [WIN_FLAG],1
-	je GAMEWIN
+	je GAMEWON
 	
 	
 	call detectBoundaries
@@ -46,23 +50,70 @@ MAINLOOP:
 	call getInput
 	
 	jmp MAINLOOP
-	
-GAMEOVER:
-	mov ah,2
-	mov dh,0
-	mov dl,39
+		
+	GAMEOVER:
+		call gameover
+	GAMEWON:
+		call gamewon
+
+main endp
+
+gamewon proc
+	mov ah,0
+	mov al,4h
 	int 10h
+	
+	mov si,offset WIN
+	mov dl,17
+again:	
+	mov ah,2
+	mov dh,12
+	
+	int 10h
+	
 	mov ah,9
-	mov al,'A'
 	mov bl,2
 	mov cx,1
+	lodsb
 	int 10h
+	inc dl
+	cmp dl,24
+	jne again
+
 	
 	mov ah,4ch
 	int 21h
-GAMEWIN:	
 
-main endp
+
+gamewon endp
+
+gameover proc
+	mov ah,0
+	mov al,4h
+	int 10h
+	
+	mov si,offset OVER
+	mov dl,15
+again:	
+	mov ah,2
+	mov dh,12
+	
+	int 10h
+	
+	mov ah,9
+	mov bl,2
+	mov cx,1
+	lodsb
+	int 10h
+	inc dl
+	cmp dl,24
+	jne again
+
+	
+	mov ah,4ch
+	int 21h
+
+gameover endp
 
 detectCollision proc
 	cmp [map+bx+si-32],1
@@ -134,6 +185,73 @@ UP:
 	
 	ret
 detectCollision endp
+
+loadScreen proc
+		mov ah,0
+	mov al,4h
+	int 10h
+	
+	mov si,offset intro
+	mov dl,15
+again:	
+	mov ah,2
+	mov dh,10
+	
+	int 10h
+	
+	mov ah,9
+	mov bl,2
+	mov cx,1
+	lodsb
+	int 10h
+	inc dl
+	cmp dl,23
+	jne again
+	
+	mov si,offset credits
+	mov dl,7
+
+again2:	
+	mov ah,2
+	mov dh,12
+	
+	int 10h
+	
+	mov ah,9
+	mov bl,2
+	mov cx,1
+	lodsb
+	int 10h
+	inc dl
+	cmp dl,32
+	jne again2
+	
+	mov si,offset instruct
+	mov dl,8
+again3:	
+	mov ah,2
+	mov dh,24
+	
+	int 10h
+	
+	mov ah,9
+	mov bl,2
+	mov cx,1
+	lodsb
+	int 10h
+	inc dl
+	cmp dl,31
+	jne again3	
+
+again4:	
+	mov ah,0
+	int 16h
+	cmp ah,39h
+	jne again4
+	
+	ret
+loadScreen endp	
+	
 	
 getInput proc	
 	mov ah,1		
