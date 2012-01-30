@@ -9,7 +9,7 @@ map	db 1 dup(40 dup(0))
 	db 14 dup(0),2,2,2,2,2,21 dup(0)
 
 barPos db 15
-ballPosX dw 16
+ballPosX dw 16 
 ballPosY dw 48
 intro db "PARANOID"
 credits db "BUILD BY FURQAN & HUSNAIN"
@@ -41,7 +41,7 @@ MAINLOOP:
 	mov [WIN_FLAG],1
 	call shwMap
 	call mvBall
-	
+
 	cmp [GAMEOVER_FLAG],1
 	je GAMEOVR
 	

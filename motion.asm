@@ -13,11 +13,11 @@ mvBall proc
 	mov di,offset ball_dx
 	mov ax,[di]
 	add [ballPosX],ax
-	cmp [ballPosX],ax
+;	cmp [ballPosX],ax
 	mov di,offset ball_dy
 	mov ax,[di]
 	add [ballPosY],ax
-	cmp [ballPosY],ax
+;	cmp [ballPosY],ax
 	
 	mov bx,offset ballPosX
 	mov si,offset ballPosY
