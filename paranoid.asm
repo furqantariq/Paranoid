@@ -12,7 +12,7 @@ barPos db 15
 ballPosX dw 16 
 ballPosY dw 48
 intro db "PARANOID"
-credits db "BUILD BY FURQAN & HUSNAIN"
+credits db "BUILD BY FURQAN & HASNAIN"
 instruct db "PRESS SPACE TO CONTINUE"
 WIN db "YOU WON"
 OVER db "GAME OVER"
