@@ -97,23 +97,19 @@ detectCollision proc
 		ret
 URT:
 	mov [map+bx+si-39],0
-;	NEG [ball_dx]
 	NEG [ball_dy]
 	jmp C8
 ULT:
 	mov [map+bx+si-41],0
-;	NEG [ball_dx]
 	NEG [ball_dy]
 	jmp C8
 BLT:
 	mov [map+bx+si+39],0
-;	NEG [ball_dx]
 	NEG [ball_dy]
 	jmp C8
 		
 BRT:
 	mov [map+bx+si+41],0
-;	NEG [ball_dx]
 	NEG [ball_dy]
 	jmp C8
 		
