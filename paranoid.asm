@@ -5,10 +5,10 @@ map	db 1 dup(40 dup(0))
 	db 13 dup(40 dup(1))
 	db 25 dup(40 dup(0))
 	db 9 dup(40 dup(0))
-	db 16 dup(0),3,23 dup(0)
+	db 16 dup(0),3,24 dup(0)
 	db 14 dup(0),2,2,2,2,2,21 dup(0)
 
-barPos db 14
+barPos db 15
 ballPosX dw 16
 ballPosY dw 48
 intro db "PARANOID"

@@ -24,7 +24,7 @@ barRight:
 	mov bx,offset barPos
 	mov bx,[bx]
 	mov bh,0
-	mov [map+40*49+bx],bh
+	mov [map+40*49+bx],0
 	mov [map+40*49+bx+5],2
 	inc [barPos]
 
